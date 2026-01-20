@@ -24,7 +24,7 @@ IDENTIFY_TIME = 3.0   # ✅ CV 판별 시간 1초
 CHARGE_RATE = 10.0    # 초당 충전량
 UNLOAD_RATE = 15.0    # 초당 하역량
 
-COLLECT_TIME_PER_UNIT = 0.3
+COLLECT_TIME_PER_UNIT = 0.1
 
 
 # =====================
