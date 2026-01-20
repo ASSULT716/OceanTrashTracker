@@ -13,13 +13,17 @@ DT = 0.1
 MAX_CAPACITY = 50.0
 BATTERY_MAX = 100.0
 
-BATTERY_MOVE_COST = 0.4
-BATTERY_COLLECT_COST = 0.3
+BATTERY_MOVE_COST = 0.3
+BATTERY_COLLECT_COST = 0.2
 BATTERY_IDENTIFY_COST = 0.2
 
 CURRENT_CHANGE_INTERVAL = 40
 SONAR_RANGE = 10
 IDENTIFY_TIME = 1.0   # ✅ CV 판별 시간 1초
+
+CHARGE_RATE = 10.0    # 초당 충전량
+UNLOAD_RATE = 15.0    # 초당 하역량
+
 
 # =====================
 # 해양 객체
@@ -193,14 +197,25 @@ def update(frame):
             drone.target = None
             drone.state = "IDLE"
 
-    if drone.battery <= 20 or drone.load >= MAX_CAPACITY:
-        drone.state = "RETURN"
-        drone.target = None
+    if drone.state in ["IDLE", "MOVING", "COLLECTING", "IDENTIFYING"]:
+        if drone.battery <= 20 or drone.load >= MAX_CAPACITY:
+            drone.state = "RETURN"
+            drone.target = None
 
     if drone.state == "RETURN":
         drone.move_to(BASE[0], BASE[1])
         if math.hypot(drone.x - BASE[0], drone.y - BASE[1]) < 1.5:
+            drone.state = "UNLOADING"
+
+    elif drone.state == "UNLOADING":
+        drone.load -= UNLOAD_RATE * DT
+        if drone.load <= 0:
             drone.load = 0
+            drone.state = "CHARGING"
+
+    elif drone.state == "CHARGING":
+        drone.battery += CHARGE_RATE * DT
+        if drone.battery >= BATTERY_MAX:
             drone.battery = BATTERY_MAX
             drone.state = "IDLE"
 
