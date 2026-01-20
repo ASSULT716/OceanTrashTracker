@@ -14,7 +14,7 @@ MAX_CAPACITY = 50.01
 BATTERY_MAX = 100.0
 
 BATTERY_MOVE_COST = 0.3
-BATTERY_COLLECT_COST = 0.2
+BATTERY_COLLECT_COST = 0.1
 BATTERY_IDENTIFY_COST = 0.2
 
 CURRENT_CHANGE_INTERVAL = 40
@@ -24,7 +24,7 @@ IDENTIFY_TIME = 3.0   # ✅ CV 판별 시간 1초
 CHARGE_RATE = 10.0    # 초당 충전량
 UNLOAD_RATE = 15.0    # 초당 하역량
 
-COLLECT_TIME_PER_UNIT = 0.00000001
+COLLECT_TIME_PER_UNIT = 0.3
 
 
 # =====================
@@ -42,16 +42,18 @@ class OceanObject:
 
         if obj_type == "surface_trash":
             self.real_amount = random.uniform(5, 12)
-            self.move_factor = 1.0
+            self.estimated_amount = self.real_amount
 
-        elif obj_type == "animal":
+        if obj_type == "animal":
             self.real_amount = 0.0
+            self.estimated_amount = random.uniform(10, 14)  # 쓰레기처럼 보임
             self.move_factor = 1.0
 
         else:  # seabed_trash
             self.real_amount = random.uniform(10, 25)
             self.move_factor = 0.25
             self.y -= random.uniform(5, 10)
+            self.estimated_amount = self.real_amount
 
         self.vx = random.uniform(-0.3, 0.3)
         self.vy = random.uniform(-0.3, 0.3)
@@ -99,16 +101,14 @@ class Drone:
 # 우선순위
 # =====================
 def priority(drone, obj):
-    if obj.type not in ["surface_trash", "seabed_trash"]:
-        return -999
-    return obj.real_amount * 10 - drone.dist(obj)
+    return obj.estimated_amount * 10 - drone.dist(obj)
 
 def select_target(drone, objs):
     candidates = [
         o for o in objs
-        if o.detected and o.real_amount > 0
-        and drone.load < MAX_CAPACITY
+        if o.detected and drone.load < MAX_CAPACITY
     ]
+
     return max(candidates, key=lambda o: priority(drone, o)) if candidates else None
 
 # =====================
