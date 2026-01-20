@@ -10,7 +10,7 @@ import math
 MAP_SIZE = 100
 DT = 0.1
 
-MAX_CAPACITY = 50.0
+MAX_CAPACITY = 50.01
 BATTERY_MAX = 100.0
 
 BATTERY_MOVE_COST = 0.3
@@ -19,10 +19,12 @@ BATTERY_IDENTIFY_COST = 0.2
 
 CURRENT_CHANGE_INTERVAL = 40
 SONAR_RANGE = 10
-IDENTIFY_TIME = 1.0   # ✅ CV 판별 시간 1초
+IDENTIFY_TIME = 3.0   # ✅ CV 판별 시간 1초
 
 CHARGE_RATE = 10.0    # 초당 충전량
 UNLOAD_RATE = 15.0    # 초당 하역량
+
+COLLECT_TIME_PER_UNIT = 0.00000001
 
 
 # =====================
@@ -176,7 +178,7 @@ def update(frame):
                 drone.target = None
                 drone.state = "IDLE"
             else:
-                drone.timer = drone.target.real_amount * 0.3
+                drone.timer = drone.target.real_amount * COLLECT_TIME_PER_UNIT
                 drone.state = "COLLECTING"
 
     elif drone.state == "COLLECTING":
